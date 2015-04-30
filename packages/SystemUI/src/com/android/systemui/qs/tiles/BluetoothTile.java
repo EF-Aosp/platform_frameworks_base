@@ -193,6 +193,14 @@ public class BluetoothTile extends QSTile<QSTile.BooleanState>  {
             mItems = QSDetailItems.convertOrInflate(context, convertView, parent);
             mItems.setTagSuffix("Bluetooth");
             mItems.setEmptyState(R.drawable.ic_qs_bluetooth_detail_empty,
+            mItemsList = QSDetailItemsList.convertOrInflate(context, convertView, parent);
+            ListView listView = mItemsList.getListView();
+            listView.setDivider(null);
+            listView.setOnItemClickListener(this);
+            listView.setAdapter(mAdapter =
+                    new QSDetailItemsList.QSDetailListAdapter(context, mBluetoothItems));
+            mAdapter.setCallback(this);
+            mItemsList.setEmptyState(R.drawable.ic_qs_bluetooth_detail_empty,
                     R.string.quick_settings_bluetooth_detail_empty_text);
             mItems.setCallback(this);
             mItems.setMinHeightInItems(0);
