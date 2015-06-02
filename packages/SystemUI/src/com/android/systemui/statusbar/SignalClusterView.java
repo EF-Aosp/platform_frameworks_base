@@ -96,6 +96,8 @@ public class SignalClusterView
 
     private int mWideTypeIconStartPadding;
 
+    private int mSecondaryTelephonyPadding;
+
     public SignalClusterView(Context context) {
         this(context, null);
     }
@@ -129,6 +131,8 @@ public class SignalClusterView
         super.onFinishInflate();
         mWideTypeIconStartPadding = getContext().getResources().getDimensionPixelSize(
                 R.dimen.wide_type_icon_start_padding);
+        mSecondaryTelephonyPadding = getContext().getResources().getDimensionPixelSize(
+                R.dimen.secondary_telephony_padding);
     }
 
     @Override
@@ -441,6 +445,7 @@ public class SignalClusterView
         } else {
             mMobileCdma1xOnly.setVisibility(View.GONE);
         }
+        mNoSims.setVisibility(mNoSimsVisible ? View.VISIBLE : View.GONE);
     }
 
     private void updateData() {
