@@ -221,6 +221,5 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/darkkat/ui/Trusted.ogg:system/media/audio/ui/Trusted.ogg \
     $(LOCAL_PATH)/darkkat/ui/VideoRecord.ogg:system/media/audio/ui/VideoRecord.ogg \
     $(LOCAL_PATH)/darkkat/ui/WirelessChargingStarted.ogg:system/media/audio/ui/WirelessChargingStarted.ogg \
-    $(LOCAL_PATH)/effects/ogg/camera_click_48k.ogg:system/media/audio/ui/camera_click.ogg \
-    $(LOCAL_PATH)/effects/ogg/camera_focus.ogg:system/media/audio/ui/camera_focus.ogg \
-
+    $(LOCAL_PATH)/darkkat/ui/camera_click.ogg:system/media/audio/ui/camera_click.ogg \
+    $(LOCAL_PATH)/darkkat/ui/camera_focus.ogg:system/media/audio/ui/camera_focus.ogg \
