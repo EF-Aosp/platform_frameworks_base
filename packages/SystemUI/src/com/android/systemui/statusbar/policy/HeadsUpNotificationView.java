@@ -50,6 +50,7 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
         ExpandHelper.Callback, ViewTreeObserver.OnComputeInternalInsetsListener {
     private static final String TAG = "HeadsUpNotificationView";
     private static final boolean DEBUG = false;
+    private static final boolean ENABLE_AOSP_BEHAVIOUR = false;
     private static final boolean SPEW = DEBUG;
     private static final String SETTING_HEADS_UP_SNOOZE_LENGTH_MS = "heads_up_snooze_length_ms";
 
@@ -345,7 +346,6 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
                 mBar.resetHeadsUpDecayTimer();
                 return mEdgeSwipeHelper.onTouchEvent(ev)
                         || mSwipeHelper.onTouchEvent(ev)
-                        || mExpandHelper.onTouchEvent(ev)
                         || super.onTouchEvent(ev);
         }
     }
@@ -500,15 +500,15 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
                     if (!mConsuming && daX < daY && daY > mTouchSlop) {
                         snooze();
                         if (dY > 0) {
-                            if (DEBUG_EDGE_SWIPE) {
+                            if (ENABLE_AOSP_BEHAVIOUR) {
                                 mBar.animateExpandNotificationsPanel();
                                 Log.d(TAG, "found an open");
                             } else {
                                 mConsuming = true;
                             }
                         } else if (dY < 0) {
-                            if (DEBUG_EDGE_SWIPE) {
-                                Log.d(TAG, "found a close");
+                            if (ENABLE_AOSP_BEHAVIOUR) {
+                                if (DEBUG_EDGE_SWIPE) Log.d(TAG, "found a close");
                                 mBar.onHeadsUpDismissed();
                             } else {
                                 releaseAndClose();

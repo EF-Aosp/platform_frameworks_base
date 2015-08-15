@@ -2115,14 +2115,14 @@ public abstract class BaseStatusBar extends SystemUI implements
         boolean isOngoing = sbn.isOngoing(); // not used yet
         boolean isClearable = sbn.isClearable(); // not used yet
 
-        final KeyguardTouchDelegate keyguard = KeyguardTouchDelegate.getInstance(mContext);
 	boolean interrupt = (isFullscreen || (isHighPriority && (isNoisy || hasTicker))
                 || asHeadsUp == Notification.HEADS_UP_REQUESTED)
                 && isAllowed
                 && !accessibilityForcesLaunch
                 && mPowerManager.isScreenOn()
-                && !keyguard.isShowingAndNotOccluded()
-                && !keyguard.isInputRestricted()
+ 		&& (!mStatusBarKeyguardViewManager.isShowing()
+                        || mStatusBarKeyguardViewManager.isOccluded())
+                && !mStatusBarKeyguardViewManager.isInputRestricted()
                 && !zenBlocksHeadsUp
                 && !isImeShowing();
         try {
@@ -2142,10 +2142,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                 mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         return inputMethodManager != null ? inputMethodManager.isImeShowing() : false;
-    }
-
-    public boolean inKeyguardRestrictedInputMode() {
-        return KeyguardTouchDelegate.getInstance(mContext).isInputRestricted();
     }
 
     public void setInteracting(int barWindow, boolean interacting) {
