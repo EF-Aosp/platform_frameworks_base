@@ -29,6 +29,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
@@ -41,6 +42,7 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -132,7 +134,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected static final boolean ENABLE_HEADS_UP = true;
     // scores above this threshold should be displayed in heads up mode.
-    protected static final int INTERRUPTION_THRESHOLD = 10;
+    protected static final int INTERRUPTION_THRESHOLD = 1;
 
     // Should match the value in PhoneWindowManager
     public static final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
@@ -226,6 +228,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected int mZenMode;
 
+    private ArrayList<String> mDndList;
+    private ArrayList<String> mBlacklist;
+
     // which notification is currently being longpress-examined by the user
     private NotificationGuts mNotificationGutsExposed;
 
@@ -278,6 +283,40 @@ public abstract class BaseStatusBar extends SystemUI implements
             updateNotifications();
         }
     };
+
+     class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        public void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.HEADS_UP_CUSTOM_VALUES),
+                    false, this);
+            resolver.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.HEADS_UP_BLACKLIST_VALUES),
+                    false, this);
+            update();
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            update();
+        }
+
+        private void update() {
+            ContentResolver resolver = mContext.getContentResolver();
+            final String dndString = Settings.System.getString(mContext.getContentResolver(),
+                    Settings.System.HEADS_UP_CUSTOM_VALUES);
+            final String blackString = Settings.System.getString(mContext.getContentResolver(),
+                    Settings.System.HEADS_UP_BLACKLIST_VALUES);
+            splitAndAddToArrayList(mDndList, dndString, "\\|");
+            splitAndAddToArrayList(mBlacklist, blackString, "\\|");
+        }
+    };
+
+    private SettingsObserver mHeadsUpSettingsObserver = new SettingsObserver(mHandler);
 
     private RemoteViews.OnClickHandler mOnClickHandler = new RemoteViews.OnClickHandler() {
         @Override
@@ -515,6 +554,12 @@ public abstract class BaseStatusBar extends SystemUI implements
         mDreamManager = IDreamManager.Stub.asInterface(
                 ServiceManager.checkService(DreamService.DREAM_SERVICE));
         mPowerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+
+ 	SettingsObserver observer = new SettingsObserver(mHandler);
+        observer.observe();
+
+        mDndList = new ArrayList<String>();
+        mBlacklist = new ArrayList<String>();
 
         mSettingsObserver.onChange(false); // set up
         mContext.getContentResolver().registerContentObserver(
@@ -1168,6 +1213,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     public abstract void resetHeadsUpDecayTimer();
+
+    public abstract void hideHeadsUp();
 
     public abstract void scheduleHeadsUpOpen();
 
@@ -2095,6 +2142,12 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
 
         Notification notification = sbn.getNotification();
+
+ // check if notification from the package is blacklisted first
+        if (isPackageBlacklisted(sbn.getPackageName())) {
+           return false;
+        }
+
         // some predicates to make the boolean logic legible
         int ZEN_MODE_OFF = Settings.Global.ZEN_MODE_OFF;
         int ZEN_MODE_NO_INTERRUPTIONS = Settings.Global.ZEN_MODE_NO_INTERRUPTIONS;
@@ -2112,12 +2165,13 @@ public abstract class BaseStatusBar extends SystemUI implements
         boolean isAllowed = asHeadsUp != Notification.HEADS_UP_NEVER;
         boolean accessibilityForcesLaunch = isFullscreen
                 && mAccessibilityManager.isTouchExplorationEnabled();
-        boolean isOngoing = sbn.isOngoing(); // not used yet
+        boolean isOngoing = sbn.isOngoing();
         boolean isClearable = sbn.isClearable(); // not used yet
 
 	boolean interrupt = (isFullscreen || (isHighPriority && (isNoisy || hasTicker))
                 || asHeadsUp == Notification.HEADS_UP_REQUESTED)
                 && isAllowed
+		&& !isOngoing
                 && !accessibilityForcesLaunch
                 && mPowerManager.isScreenOn()
  		&& (!mStatusBarKeyguardViewManager.isShowing()
@@ -2130,8 +2184,49 @@ public abstract class BaseStatusBar extends SystemUI implements
         } catch (RemoteException e) {
             Log.d(TAG, "failed to query dream manager", e);
         }
+
+        // its below our threshold priority, we might want to always display
+        // notifications from certain apps
+        if (!isHighPriority && !isOngoing && !keyguardIsShowing) {
+            // However, we don't want to interrupt if we're in an application that is
+            // in Do Not Disturb
+            if (!isPackageInDnd(getTopLevelPackage())) {
+                return true;
+            }
+        }
+
         if (DEBUG) Log.d(TAG, "interrupt: " + interrupt);
         return interrupt;
+        }
+
+    private String getTopLevelPackage() {
+        final ActivityManager am = (ActivityManager)
+                mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo > taskInfo = am.getRunningTasks(1);
+        ComponentName componentInfo = taskInfo.get(0).topActivity;
+        return componentInfo.getPackageName();
+    }
+
+    private boolean isPackageInDnd(String packageName) {
+        return mDndList.contains(packageName);
+    }
+
+    private boolean isPackageBlacklisted(String packageName) {
+        return mBlacklist.contains(packageName);
+    }
+
+    private void splitAndAddToArrayList(ArrayList<String> arrayList,
+                                        String baseString, String separator) {
+        // clear first
+        if (arrayList != null) {
+            arrayList.clear();
+            if (baseString != null) {
+                final String[] array = TextUtils.split(baseString, separator);
+                for (String item : array) {
+                    arrayList.add(item.trim());
+                }
+            }
+        }
     }
 
     /**
