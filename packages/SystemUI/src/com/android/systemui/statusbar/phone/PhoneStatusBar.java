@@ -441,11 +441,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
             int mode = Settings.System.getIntForUser(mContext.getContentResolver(),
-+                            Settings.System.SCREEN_BRIGHTNESS_MODE,
-+                            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
-+                            UserHandle.USER_CURRENT);
-+            mAutomaticBrightness = mode != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-+            mBrightnessControl = Settings.System.getInt(
+                            Settings.System.SCREEN_BRIGHTNESS_MODE,
+                            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
+                            UserHandle.USER_CURRENT);
+            mAutomaticBrightness = mode != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+            mBrightnessControl = Settings.System.getInt(
                     resolver, Settings.System.STATUS_BAR_BRIGHTNESS_CONTROL, 0) == 1;
         }
     }
