@@ -2704,6 +2704,7 @@ private void adjustBrightness(int x) {
                         }
                     });
                 }
+
  
             }
         } catch (RemoteException e) {
