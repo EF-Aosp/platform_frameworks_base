@@ -385,11 +385,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private int mNavigationIconHints = 0;
     private HandlerThread mHandlerThread;
 
-	@Override
-        public void onChange(boolean selfChange) {
-            update();
-        }
-
     // ensure quick settings is disabled until the current user makes it through the setup wizard
     private boolean mUserSetup = false;
     private ContentObserver mUserSetupObserver = new ContentObserver(new Handler()) {
@@ -623,7 +618,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mHeadsUpObserver.onChange(true); // set up
         if (ENABLE_HEADS_UP) {
             mContext.getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.HEADS_UP_NOTIFICATIONS), true,
+                    Settings.System.getUriFor(Settings.System.HEADS_UP_NOTIFICATION), true,
                     mHeadsUpObserver, mCurrentUserId);
             mContext.getContentResolver().registerContentObserver(
                     Settings.System.getUriFor(Settings.System.HEADS_UP_TICKER_ENABLED), true,
