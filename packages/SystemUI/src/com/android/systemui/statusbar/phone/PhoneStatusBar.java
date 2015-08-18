@@ -479,7 +479,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             // OK, lets check 374654 things.
             mUseHeadsUp = ENABLE_HEADS_UP && !mDisableNotificationAlerts && Settings.System.getIntForUser(
                     mContext.getContentResolver(),
-                    Settings.System.HEADS_UP_NOTIFICATION, 0, UserHandle.USER_CURRENT) == 1;
+                    Settings.System.HEADS_UP_NOTIFICATION, 1, UserHandle.USER_CURRENT) == 1;
             mHeadsUpTicker = mUseHeadsUp && 0 != Settings.System.getIntForUser(
                     mContext.getContentResolver(), Settings.System.HEADS_UP_TICKER_ENABLED,
                     Settings.System.HEADS_UP_TICKER_OFF,
