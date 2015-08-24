@@ -331,9 +331,6 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
         if (mClearRecents != null) {
             mClearRecents.setVisibility(View.VISIBLE);
         }
-        if (mFloatingButton != null) {
-            mFloatingButton.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
