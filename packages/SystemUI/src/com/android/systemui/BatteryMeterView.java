@@ -220,6 +220,7 @@ public class BatteryMeterView extends View implements DemoMode,
 
     public BatteryMeterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+	mHandler = new Handler();
 
         final Resources res = context.getResources();
         TypedArray atts = context.obtainStyledAttributes(attrs, R.styleable.BatteryMeterView,
@@ -520,7 +521,6 @@ public class BatteryMeterView extends View implements DemoMode,
             if (mHorizontal) {
                 mButtonFrame.set(
                         /*cover frame border of intersecting area*/
-                //set(float left, float top, float right, float bottom)
                         width - buttonHeight - mFrame.left,
                         mFrame.top + Math.round(height * 0.25f),
                         mFrame.right,
@@ -634,7 +634,8 @@ public class BatteryMeterView extends View implements DemoMode,
                     c.drawPath(mBoltPath, mBoltPaint);
                 } else {
                     // otherwise cut the bolt out of the overall shape
-                    mShapePath.op(mBoltPath, Path.Op.DIFFERENCE);;
+                    mShapePath.op(mBoltPath, Path.Op.DIFFERENCE);
+		}
             }
 
             // compute percentage text
@@ -725,6 +726,7 @@ public class BatteryMeterView extends View implements DemoMode,
             return ptsF;
  	 }
      }
+
     protected class CircleBatteryMeterDrawable implements BatteryMeterDrawable {
 	private static final boolean SINGLE_DIGIT_PERCENT = false;
         private static final boolean SHOW_100_PERCENT = false;
