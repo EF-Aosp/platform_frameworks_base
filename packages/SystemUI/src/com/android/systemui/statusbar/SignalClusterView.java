@@ -445,7 +445,7 @@ public class SignalClusterView
         } else {
             mMobileCdma1xOnly.setVisibility(View.GONE);
         }
-        mNoSims.setVisibility(mNoSimsVisible ? View.VISIBLE : View.GONE);
+
     }
 
     private void updateData() {
